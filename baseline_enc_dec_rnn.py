@@ -23,8 +23,6 @@ HOW TO RUN:
 """
 
 import numpy as np
-import matplotlib
-matplotlib.use("Agg")           # headless backend — saves to file instead of GUI
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import os
@@ -86,7 +84,7 @@ def log_section(title: str) -> None:
 
 
 def log_step(msg: str) -> None:
-    print(f"  ▶  {msg}")
+    print(f"  >  {msg}")
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -371,7 +369,7 @@ def train(dataset, params, vocab_size, epochs, lr, log_every):
             # show a couple of sample predictions
             for i, (inp, tgt) in enumerate(dataset[:3]):
                 pred = predict(inp, len(tgt), params, vocab_size)
-                correct = "✓" if pred == tgt else "✗"
+                correct = "[OK]" if pred == tgt else "[FAIL]"
                 log_step(
                     f"  Sample {i+1}: input={inp}  "
                     f"target={tgt}  pred={pred}  {correct}"
@@ -389,7 +387,7 @@ def evaluate(dataset, params, vocab_size):
     correct = 0
     for inp, tgt in dataset:
         pred = predict(inp, len(tgt), params, vocab_size)
-        status = "✓" if pred == tgt else "✗"
+        status = "[OK]" if pred == tgt else "[FAIL]"
         log_step(f"input={inp}  target={tgt}  pred={pred}  {status}")
         if pred == tgt:
             correct += 1
@@ -439,7 +437,7 @@ def plot_results(loss_history, hidden_state_snapshots,
 
     # ── Plot 1: Loss curve ────────────────────────────────────────────────
     ax0 = fig.add_subplot(gs[0, 0])
-    style_ax(ax0, "📉  Loss vs. Iteration")
+    style_ax(ax0, "[LOSS]  Loss vs. Iteration")
     epochs_range = np.arange(1, len(loss_history) + 1)
     ax0.plot(epochs_range, loss_history, color=ACCENT, linewidth=1.5)
     ax0.fill_between(epochs_range, loss_history,
@@ -450,7 +448,7 @@ def plot_results(loss_history, hidden_state_snapshots,
 
     # ── Plot 2: Encoder hidden-state heatmap (final epoch) ───────────────
     ax1 = fig.add_subplot(gs[0, 1])
-    style_ax(ax1, "🔥  Encoder Hidden State Heatmap (Final Epoch)")
+    style_ax(ax1, "[STATE]  Encoder Hidden State Heatmap (Final Epoch)")
 
     ctx, enc_h_hist, _, _ = encoder_forward(
         dataset[0][0], params, vocab_size)
@@ -467,7 +465,7 @@ def plot_results(loss_history, hidden_state_snapshots,
 
     # ── Plot 3: Decoder hidden-state heatmap (final epoch) ───────────────
     ax2 = fig.add_subplot(gs[1, 0])
-    style_ax(ax2, "🔥  Decoder Hidden State Heatmap (Final Epoch)")
+    style_ax(ax2, "[STATE]  Decoder Hidden State Heatmap (Final Epoch)")
 
     dec_probs, dec_h_hist, _, _ = decoder_forward(
         ctx, dataset[0][1], params, vocab_size)
@@ -488,7 +486,7 @@ def plot_results(loss_history, hidden_state_snapshots,
     ax3.set_xlim(0, 10)
     ax3.set_ylim(0, 6)
     ax3.axis("off")
-    ax3.set_title("📐  Architecture Overview", color=TEXT,
+    ax3.set_title("[ARCH]  Architecture Overview", color=TEXT,
                   fontsize=10, fontweight="bold", pad=8)
 
     def box(ax, x, y, w, h, label, color, fontsize=7.5):
@@ -543,11 +541,12 @@ def plot_results(loss_history, hidden_state_snapshots,
     ax3.text(7.0, 4.7, "SGD·lr=0.01\none-hot inputs",
              ha="center", color=SUBTEXT, fontsize=7)
 
-    # ── Save ──────────────────────────────────────────────────────────────
+    # ── Save & Display ────────────────────────────────────────────────────
     plt.savefig(output_path, dpi=150, bbox_inches="tight",
                 facecolor=DARK_BG)
+    print(f"\n  [OK]  Plot saved -> {os.path.abspath(output_path)}")
+    plt.show()  # Display plot in real-time
     plt.close()
-    print(f"\n  ✅  Plot saved → {os.path.abspath(output_path)}")
 
 
 # ─────────────────────────────────────────────────────────────────────────────
