@@ -30,13 +30,19 @@ import os
 # ─────────────────────────────────────────────────────────────────────────────
 # CONFIGURATION  (tweak these to experiment)
 # ─────────────────────────────────────────────────────────────────────────────
-VOCAB_SIZE   = 4          # symbols: 0, 1, 2, 3
-SEQ_LEN      = 3          # fixed sequence length
-HIDDEN_SIZE  = 8          # number of hidden units in encoder & decoder
+# VOCAB_SIZE depends on protocol:
+#   • mirror       : 10
+#   • secret acct  : 13
+#   • broken typewrt: 26
+#   • liar         : 2
+VOCAB_SIZE   = 10         # set to appropriate size for your protocol
+SEQ_LEN      = 5          # fixed sequence length
+HIDDEN_SIZE  = 128        # number of hidden units in encoder & decoder
 LEARNING_RATE = 0.01      # SGD learning rate (fixed per lab spec)
-EPOCHS       = 300        # training iterations
-LOG_EVERY    = 50         # print a log line every N epochs
-NUM_SAMPLES  = 20         # training examples to generate
+EPOCHS       = 1000       # training iterations
+LOG_EVERY    = 20         # print a log line every N epochs (captures ~50 snapshots)
+NUM_SAMPLES  = 1000       # training examples to generate
+TEST_SIZE    = 250        # test set size
 SEED         = 42         # reproducibility
 
 OUTPUT_DIR   = "."        # where plots are saved
@@ -117,15 +123,15 @@ def init_params(vocab_size: int, hidden_size: int) -> dict:
     Xavier-ish random init for all weight matrices.
 
     ENCODER weights:
-        Wx_enc  : input  → hidden   (hidden_size × vocab_size)
-        Wh_enc  : hidden → hidden   (hidden_size × hidden_size)
+        Wx_enc  : input  -> hidden   (hidden_size x vocab_size)
+        Wh_enc  : hidden -> hidden   (hidden_size x hidden_size)
         bh_enc  : bias              (hidden_size × 1)
 
     DECODER weights:
-        Wx_dec  : input  → hidden   (hidden_size × vocab_size)
-        Wh_dec  : hidden → hidden   (hidden_size × hidden_size)
-        bh_dec  : bias              (hidden_size × 1)
-        Wy_dec  : hidden → output   (vocab_size  × hidden_size)
+        Wx_dec  : input  -> hidden   (hidden_size x vocab_size)
+        Wh_dec  : hidden -> hidden   (hidden_size x hidden_size)
+        bh_dec  : bias              (hidden_size x 1)
+        Wy_dec  : hidden -> output   (vocab_size  x hidden_size)
         by_dec  : output bias       (vocab_size  × 1)
     """
     scale = 0.1
@@ -523,7 +529,7 @@ def plot_results(loss_history, hidden_state_snapshots,
         if i > 0:
             arrow(ax3, xi - 0.5, 1.65, xi, 1.65)
 
-    # context → first decoder
+    # context -> first decoder
     arrow(ax3, 7.0, 3.5, 1.25, 2.1, color="#e53170")
 
     # output labels
@@ -567,7 +573,7 @@ def main():
     log_step(f"Generated {len(dataset)} samples | "
              f"vocab={VOCAB_SIZE} | seq_len={SEQ_LEN}")
     for i, (inp, tgt) in enumerate(dataset[:5]):
-        log_step(f"  Sample {i+1}: input={inp}  →  target={tgt}")
+        log_step(f"  Sample {i+1}: input={inp}  ->  target={tgt}")
     log_step("  ... (showing first 5 of dataset)")
 
     # 2. Model init
